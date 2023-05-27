@@ -91,10 +91,46 @@ def shortest_path(source, target):
 
     If no possible path, returns None.
     """
+    frontier = QueueFrontier() #Using BFS
+    explored_ids, path = [], []
+    
+    # Create source node
+    source_person = Node(state=source, parent=None, action=None)
+    
+    # Add source node to frontier
+    frontier.add(source_person)
+    
+    while True:
+        if frontier.empty():
+            return None
+        
+        # Remove node from the frontier and explore it
+        current_person = frontier.remove()
+        explored_ids.append(current_person.state)
 
-    # TODO
-    raise NotImplementedError
+        if current_person.state == target:
+            return reconstruct_path_from_target_node(target_node=current_person, source_state=source)
+        
+        else:
+            for common_movie_id, neighbor_id in neighbors_for_person(current_person.state):
+                # Ensures current neighbor has not yet been visited or is not in the frontier before considering it
+                if (neighbor_id not in explored_ids) and not frontier.contains_state(neighbor_id): 
+                    # Create node for neighbor and add it to the frontier
+                    neighbor = Node(state=neighbor_id, parent=current_person, action=common_movie_id)
+                    # If current neighbot is target, stop search
+                    if neighbor_id == target:
+                        return reconstruct_path_from_target_node(target_node=neighbor, source_state=source)
+                    frontier.add(neighbor)
+                    
 
+def reconstruct_path_from_target_node(target_node: Node, source_state):
+    current_node, path = target_node, []
+
+    while current_node.state != source_state:
+        path.insert(0, (current_node.action, current_node.state))
+        current_node = current_node.parent
+    
+    return path
 
 def person_id_for_name(name):
     """
